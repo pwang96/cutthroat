@@ -23,6 +23,7 @@ def is_augmentation(original, augmented):
 
     return True
 
+
 class Node:
     def __init__(self, label=None, data=None):
         self.label = label
