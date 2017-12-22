@@ -15,6 +15,7 @@ class Bot:
         self.game = game
         self.thinking = False
         self.dictionary = None
+        self.interrupted = False
 
         self.initialize_dictionary()
 
@@ -51,6 +52,11 @@ class Bot:
         pid = 0
         index = 0
         used_chars = ()
+
+        if self.interrupted:
+            self.interrupted = False
+            self.thinking = False
+            return
 
         # try to augment existing words
         for (word, player_id, i) in words:
@@ -107,9 +113,6 @@ class Bot:
             self.game.update_play_field()
 
             self.game.send_all("valid_word", top_word, self.name)
-            return True
-
-        return False
 
     def calculate_points(self, word, difference):
         return len(word) - difference

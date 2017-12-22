@@ -18,4 +18,4 @@ class Player:
         return "Player name: {}, Player ID: {}".format(self.name, self.id)
 
     def __repr__(self):
-        return " | ".join([str(self.id), self.name, str(self.score), str(self.active)])
+        return " | ".join([self.name, str(self.score), str(self.active)])

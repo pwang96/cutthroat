@@ -1,5 +1,5 @@
 
-MAX_PLAYERS = 3
+MAX_PLAYERS = 8
 
 BOT_DELAY = 4  # seconds for bot delay
 

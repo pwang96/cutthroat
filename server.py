@@ -31,10 +31,9 @@ async def wshandler(request):
     while True:
         msg = await ws.receive()
         if msg.tp == web.MsgType.text:
-            print("Got message %s" % msg.data)
-
             data = json.loads(msg.data)
-            print("message data: {}".format(data))
+            print("Got message: {}".format(data))
+
             if not player:
                 if data[0] == "new_player":
                     player = game.new_player(data[1], ws)
@@ -42,13 +41,14 @@ async def wshandler(request):
                 if player.active and data[0] == "play_word":
                     game.play_word(data[1].lower(), player)
                 elif player.active and data[0] == "draw_tile":
-                    game.draw_tile()
+                    game.draw_tile(player)
                 elif player.active and data[0] == "add_bot":
                     if not game.bot:
                         game.create_bot()
                 elif data[0] == "join":
                     if not game.running:
-                        game.reset()
+                        if not game.is_ready():
+                            game.reset()
 
                         print("Starting game loop")
                         asyncio.ensure_future(game_loop(game))

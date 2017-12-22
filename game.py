@@ -7,7 +7,7 @@ from bot import Bot
 class Game:
 
     def __init__(self):
-        self._last_id = 1
+        self._last_id = 0
         self._players = {}
         self._free_tiles = []
         self._bag = []
@@ -39,8 +39,11 @@ class Game:
         :param ws: WebServer
         :return: Player
         """
-        player_id = self._last_id
         self._last_id += 1
+        player_id = self._last_id
+        while player_id in self._players or self.bot and player_id == self.bot.id:
+            self._last_id += 1
+            player_id = self._last_id
 
         p = Player(player_id, name, ws)
         self.send_personal(ws, "handshake", name, player_id)
@@ -51,6 +54,7 @@ class Game:
 
     def join(self, player):
         if player.active:
+            # should never happen because the join button should be disabled
             return
         if len(self._players) >= settings.MAX_PLAYERS:
             self.send_personal(player.ws, "game_full")
@@ -72,9 +76,16 @@ class Game:
         del player
         self.send_all("dc", name)
 
+        self.update_play_field()
+        if len(self._players) == 0:
+            self.finished = True
+
     def create_bot(self):
-        bot_id = self._last_id
         self._last_id += 1
+        bot_id = self._last_id
+        while bot_id in self._players:
+            self._last_id += 1
+            bot_id = self._last_id
 
         self.bot = Bot(self, bot_id)
 
@@ -108,7 +119,7 @@ class Game:
             # update the player word lists
             player.words.append(word)
             if pid != 0:
-                if self.bot and pid == self.bot:
+                if self.bot and pid == self.bot.id:
                     del self.bot.words[index]
                 else:
                     del self._players[pid].words[index]
@@ -133,7 +144,8 @@ class Game:
             if player.ws:
                 player.ws.send_str(msg)
 
-    def draw_tile(self):
+    def draw_tile(self, player):
+        print("{} drew a tile".format(player.name))
         if len(self._bag) == 0:
             self.finished = True
             return
@@ -145,7 +157,7 @@ class Game:
     def reset(self):
         self._initialize_bag()
         self._free_tiles = []
-        self._last_id = 1
+        self._last_id = 0
 
     @property
     def free_tiles(self):
@@ -198,7 +210,7 @@ class Game:
     def update_play_field(self):
         message = "update"
         free_tiles = self.free_tiles
-        player_words = {player.name:player.words for player in self._players.values()}
+        player_words = {player.name:player.words for player in self._players.values() if player.active}
 
         if self.bot:
             player_words[self.bot.name] = self.bot.words
@@ -209,13 +221,19 @@ class Game:
 
         # make the bot think every time the board changes
         if self.bot:
-            if not self.bot.thinking:
+            if self.bot.thinking:
+                self.bot.interrupted = True  # TODO: fix the bugginess of this
+            else:
                 self.bot.think()
 
     def update_score_field(self):
-        scores = [[player.name, player.score] for player in self._players.values()]
+        scores = [[player.name, player.score] for player in self._players.values() if player.active]
 
         if self.bot:
             scores.append([self.bot.name, self.bot.score])
 
         self.send_all("scores", sorted(scores, key=lambda x: -x[1]))
+
+    def is_ready(self):
+        """The game is okay to start"""
+        return not any((self._last_id, len(self._free_tiles), len(self._players)))

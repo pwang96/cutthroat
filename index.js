@@ -5,16 +5,8 @@ var playerId;
 $().ready(function () {
     $("#mainScreen").show()
     $("#playScreen").hide()
-    $("#btnConnect").click(function () {
-        playerName = $("#playerName").val()
-        $("#status").text("connecting...");
-        ws_url = "ws://" + location.host + "/connect"
-        ws = new WebSocket(ws_url);
-        ws.onopen = openHandler;
-        ws.onmessage = messageHandler;
-        ws.onerror = function (e) {
-            $("#status").text(e.message);
-        };
+    $("#btnConnect").click(function (){
+        connect();
     });
     $("#btnDisconnect").click(function () {
         ws.close();
@@ -28,15 +20,43 @@ $().ready(function () {
     $("#btnPlayWord").click(function() {
         word = $("#word").val();
         sendMessage(["play_word", word]);
+        $("#word").val('');
     });
     $("#btnDrawTile").click(function() {
         sendMessage(["draw_tile"]);
+        $("#word").focus();
     });
     $("#btnAddBot").click(function() {
         sendMessage(["add_bot"]);
     });
-
+    $("#playerName").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $("#btnConnect").click();
+        }
+    });
+    $("#word").keyup(function(event) {
+        if (event.keyCode === 13) {
+            $("#btnPlayWord").click();
+        }
+    });
+    $(document).keyup(function(event) {
+        if (event.keyCode === 9) {
+            $("#btnDrawTile").click();
+        }
+    });
 });
+
+function connect() {
+    playerName = $("#playerName").val()
+    $("#status").text("connecting...");
+    ws_url = "ws://" + location.host + "/connect"
+    ws = new WebSocket(ws_url);
+    ws.onopen = openHandler;
+    ws.onmessage = messageHandler;
+    ws.onerror = function (e) {
+        $("#status").text(e.message);
+    };
+}
 
 function sendMessage(msgArray) {
     var msg = JSON.stringify(msgArray);
