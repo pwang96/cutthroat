@@ -79,9 +79,12 @@ function messageHandler(e){
             var players = args[2];
             $("#freeTiles").text("[" + free_tiles + "]");
             $("#table").empty();
+            $("#currentPlayers").empty();
+            $("#currentPlayers").append("<h5>Current Players</h5>");
             $.each(players, function(player_name,words){
                 var entry = "<p>" + player_name + ": [" + words + "]</p>"
-                $("#table").append(entry)
+                $("#table").append(entry);
+                $("#currentPlayers").append("<p>" + player_name + "</p>");
             });
             break
 
@@ -118,13 +121,6 @@ function messageHandler(e){
             var name = args[1];
             $("#notification").text(name + " has disconnected");
             break
-
-        case("p_gameover"):
-            id = args[1];
-            $("#player" + id).remove();
-            if(id == playerId)
-                $("#btnJoin").css("visibility", "visible");
-            break
     }
 }
 
@@ -151,6 +147,9 @@ function messageHandler(e){
         <div id="joinBtnField">
             <button id="btnJoin">Join!</button>
         </div>
+        <div id="currentPlayers"><h5>Current Players</h5>
+        </div>
+        <div id="divider">-----------------------------</div>
 
         <div id="playField">
             <div id="notification"></div>

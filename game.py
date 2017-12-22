@@ -54,6 +54,7 @@ class Game:
             return
         if len(self._players) >= settings.MAX_PLAYERS:
             self.send_personal(player.ws, "game_full")
+            self.update_play_field()
             return
 
         print(self._players)
@@ -62,6 +63,7 @@ class Game:
 
         player.active = True
         self.send_all("p_joined", player.id, player.name)
+        self.update_play_field()
 
     def player_disconnected(self, player):
         player.ws = None
@@ -77,6 +79,7 @@ class Game:
         self.bot = Bot(self, bot_id)
 
         self.send_all("p_joined", 0, self.bot.name)
+        self.update_play_field()
 
     def play_word(self, word, player):
         """
@@ -95,13 +98,20 @@ class Game:
             new_word_length = len(word)
             player.score += new_word_length
             if pid != 0:
-                old_word_length = len(self._players[pid].words[index])
-                self._players[pid].score -= old_word_length
+                if self.bot and pid == self.bot.id:
+                    old_word_length = len(self.bot.words[index])
+                    self.bot.score -= old_word_length
+                else:
+                    old_word_length = len(self._players[pid].words[index])
+                    self._players[pid].score -= old_word_length
 
             # update the player word lists
             player.words.append(word)
             if pid != 0:
-                del self._players[pid].words[index]
+                if self.bot and pid == self.bot:
+                    del self.bot.words[index]
+                else:
+                    del self._players[pid].words[index]
 
             self.update_play_field()
 
@@ -199,7 +209,8 @@ class Game:
 
         # make the bot think every time the board changes
         if self.bot:
-            self.bot.think()
+            if not self.bot.thinking:
+                self.bot.think()
 
     def update_score_field(self):
         scores = [[player.name, player.score] for player in self._players.values()]

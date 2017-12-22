@@ -52,7 +52,6 @@ async def wshandler(request):
 
                         print("Starting game loop")
                         asyncio.ensure_future(game_loop(game))
-                        # event_loop.run_until_complete(game_loop(game))
 
                     game.join(player)
 

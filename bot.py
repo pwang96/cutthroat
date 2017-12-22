@@ -23,12 +23,9 @@ class Bot:
 
     def think(self):
         print("bot is thinking for {} sec".format(settings.BOT_DELAY))
-        self.thinking = True
 
-        loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.play_word())
+        asyncio.ensure_future(self.play_word())
 
-        self.thinking = False
         print("bot is done thinking")
 
     def initialize_dictionary(self):
@@ -43,7 +40,9 @@ class Bot:
         """
         Waits the delay, finds a word and plays it.
         """
+        self.thinking = True
         await asyncio.sleep(settings.BOT_DELAY)
+        self.thinking = False
 
         words = self.game.all_words
         free = self.game.free_tiles
@@ -88,7 +87,7 @@ class Bot:
                 self.game._free_tiles.remove(c)
 
             # update scores
-            new_word_length = len(word)
+            new_word_length = len(top_word)
             self.score += new_word_length
             if pid != 0 and pid != self.id:
                 old_word_length = len(self.game._players[pid].words[index])
@@ -98,7 +97,7 @@ class Bot:
                 self.score -= old_word_length
 
             # update the player word lists
-            self.words.append(word)
+            self.words.append(top_word)
             if pid != 0:
                 if pid == self.id:
                     del self.words[index]
@@ -107,7 +106,7 @@ class Bot:
 
             self.game.update_play_field()
 
-            self.game.send_all("valid_word", word, self.name)
+            self.game.send_all("valid_word", top_word, self.name)
             return True
 
         return False

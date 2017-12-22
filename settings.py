@@ -1,5 +1,3 @@
-from collections import defaultdict
-
 
 MAX_PLAYERS = 3
 

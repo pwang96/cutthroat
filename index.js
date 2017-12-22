@@ -71,9 +71,12 @@ function messageHandler(e){
             var players = args[2];
             $("#freeTiles").text("[" + free_tiles + "]");
             $("#table").empty();
+            $("#currentPlayers").empty();
+            $("#currentPlayers").append("<h5>Current Players</h5>");
             $.each(players, function(player_name,words){
-                var entry = "<p>" + player_name + ": [" + words + "]</p>"
-                $("#table").append(entry)
+                var entry = "<p>" + player_name + ": [" + words + "]</p>";
+                $("#table").append(entry);
+                $("#currentPlayers").append("<p>" + player_name + "</p>");
             });
             break
 
