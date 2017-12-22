@@ -13,3 +13,6 @@ class Player:
         self.words = []
         self.score = 0
         self.active = False
+
+    def __str__(self):
+        return "Player name: {}, Player ID: {}".format(self.name, self.id)

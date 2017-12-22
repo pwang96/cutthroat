@@ -31,7 +31,11 @@ $().ready(function () {
     });
     $("#btnDrawTile").click(function() {
         sendMessage(["draw_tile"]);
-    })
+    });
+    $("#btnAddBot").click(function() {
+        sendMessage(["add_bot"]);
+    });
+
 });
 
 function sendMessage(msgArray) {
@@ -57,6 +61,11 @@ function messageHandler(e){
             $("#username").text(args[1]);
             playerId = args[2];
             break
+
+        case("game_full"):
+            $("#notification").text("Sorry! The game is full.")
+            break
+
         case("update"):
             var free_tiles = args[1];
             var players = args[2];
@@ -67,31 +76,46 @@ function messageHandler(e){
                 $("#table").append(entry)
             });
             break
+
         case("p_joined"):
             var id = args[1];
-            $("#status").text("joined the game");
+            var name = args[2];
             if(id == playerId)
                 $("#btnJoin").css("visibility", "hidden");
+            $("#notification").text(name + " has joined!");
             break
+
+        case("valid_word"):
+            var word = args[1];
+            var name = args[2];
+            $("#notification").text(name + " played " + word);
+            break
+
+        case("invalid_word"):
+            var word = args[1];
+            $("#notification").text(word + " is not valid!");
+            break
+
+        case("scores"):
+            var scores = args[1];
+            $("#scoresList").empty();
+            for (var i = 0; i < scores.length; i++) {
+                var name = scores[i][0];
+                var score = scores[i][1];
+                $("#scoresList").append("<p>" + name + ": " + score + "</p>");
+            }
+            break
+
+        case("dc"):
+            var name = args[1];
+            $("#notification").text(name + " has disconnected");
+            break
+
         case("p_gameover"):
             id = args[1];
             $("#player" + id).remove();
             if(id == playerId)
                 $("#btnJoin").css("visibility", "visible");
             break
-        case("p_score"):
-            id = args[1];
-            score = args[2];
-            $("#player" + id + " .score").text(score);
-            break
-        case("top_scores"):
-            $("#topScoresList").empty();
-            players = args[1];
-            for(var n = 0; n < players.length; n++) {
-                name = players[n][0];
-                score = players[n][1];
-                color = players[n][2];
-                addTopScore(color, name, score);
-            }
     }
 }

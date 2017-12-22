@@ -1,6 +1,7 @@
 import settings, string, utils, random, json
 from player import Player
 from collections import Counter
+from bot import Bot
 
 
 class Game:
@@ -11,6 +12,7 @@ class Game:
         self._free_tiles = []
         self._bag = []
         self._word_list = None
+        self.bot = None
         self.running = False
         self.finished = False
 
@@ -51,26 +53,36 @@ class Game:
         if player.active:
             return
         if len(self._players) >= settings.MAX_PLAYERS:
-            # TODO: notify the player that the game is full
+            self.send_personal(player.ws, "game_full")
             return
 
-        player.active = True
-        self.send_all("p_joined", player.id)
+        print(self._players)
+        if self.bot:
+            print(self.bot)
 
-        # TODO: notify that the player has joined the game
+        player.active = True
+        self.send_all("p_joined", player.id, player.name)
 
     def player_disconnected(self, player):
         player.ws = None
+        name = player.name
         del self._players[player.id]
         del player
+        self.send_all("dc", name)
 
-        # TODO: notify that the player has left
+    def create_bot(self):
+        bot_id = self._last_id
+        self._last_id += 1
+
+        self.bot = Bot(self, bot_id)
+
+        self.send_all("p_joined", 0, self.bot.name)
 
     def play_word(self, word, player):
         """
 
         :param word: string: proposed word
-        :param player_id: int: id of the player who proposed the word
+        :param player: Player: player who proposed the word
         :return: bool: if word was accepted or not
         """
         pid, index, used_chars = self.is_valid(word)
@@ -93,10 +105,10 @@ class Game:
 
             self.update_play_field()
 
-            # TODO: notify players that a word has been played
+            self.send_all("valid_word", word, player.name)
             return True
 
-        # TODO: notify the player that their word is invalid
+        self.send_personal(player.ws, "invalid_word", word)
         return False
 
     def send_personal(self, ws, *args):
@@ -105,11 +117,8 @@ class Game:
         ws.send_str(msg)
 
     def send_all(self, *args):
-        self.send_all_multi(args)
-
-    def send_all_multi(self, commands):
-        msg = json.dumps(commands)
-        print("sending message to all: " + msg)
+        msg = json.dumps(args)
+        print("sending message to all: {}".format(msg))
         for player in self._players.values():
             if player.ws:
                 player.ws.send_str(msg)
@@ -134,7 +143,12 @@ class Game:
 
     @property
     def all_words(self):
-        return [(word, player.id, i) for player in self._players.values() for (i, word) in enumerate(player.words)]
+        words = [(word, player.id, i) for player in self._players.values() for (i, word) in enumerate(player.words)]
+
+        if self.bot:
+            words.extend([(word, self.bot.id, i) for (i, word) in enumerate(self.bot.words)])
+
+        return words
 
     def is_valid(self, proposed_word):
         """
@@ -149,7 +163,7 @@ class Game:
         :return: (int, int, tuple):
         """
         if not self._word_list.has_word(proposed_word):
-            return -1
+            return -1, -1, ()
 
         proposed_word_counter = Counter(proposed_word)
 
@@ -172,8 +186,25 @@ class Game:
         return -1, -1, ()
 
     def update_play_field(self):
-        message = ["update"]
-        free_tiles = [self.free_tiles]
-        player_words = [{player.name:player.words for player in self._players.values()}]
+        message = "update"
+        free_tiles = self.free_tiles
+        player_words = {player.name:player.words for player in self._players.values()}
 
-        self.send_all_multi(message + free_tiles + player_words)
+        if self.bot:
+            player_words[self.bot.name] = self.bot.words
+
+        self.send_all(message, free_tiles, player_words)
+
+        self.update_score_field()
+
+        # make the bot think every time the board changes
+        if self.bot:
+            self.bot.think()
+
+    def update_score_field(self):
+        scores = [[player.name, player.score] for player in self._players.values()]
+
+        if self.bot:
+            scores.append([self.bot.name, self.bot.score])
+
+        self.send_all("scores", sorted(scores, key=lambda x: -x[1]))

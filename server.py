@@ -43,12 +43,16 @@ async def wshandler(request):
                     game.play_word(data[1].lower(), player)
                 elif player.active and data[0] == "draw_tile":
                     game.draw_tile()
+                elif player.active and data[0] == "add_bot":
+                    if not game.bot:
+                        game.create_bot()
                 elif data[0] == "join":
                     if not game.running:
                         game.reset()
 
                         print("Starting game loop")
                         asyncio.ensure_future(game_loop(game))
+                        # event_loop.run_until_complete(game_loop(game))
 
                     game.join(player)
 
