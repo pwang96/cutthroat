@@ -13,7 +13,7 @@ var playerId;
 $().ready(function () {
     $("#mainScreen").show()
     $("#playScreen").hide()
-    $("#btnConnect").click(function () {
+    $("#btnConnect").click(function (){
         connect();
     });
     $("#btnDisconnect").click(function () {
@@ -97,7 +97,7 @@ function messageHandler(e){
         case("update"):
             var free_tiles = args[1];
             var players = args[2];
-            $("#freeTiles").text("[" + free_tiles + "]");
+            $("#freeTiles").text("Free tiles: [" + free_tiles + "]");
             $("#table").empty();
             $("#currentPlayers").empty();
             $("#currentPlayers").append("<h5>Current Players</h5>");
@@ -111,8 +111,10 @@ function messageHandler(e){
         case("p_joined"):
             var id = args[1];
             var name = args[2];
-            if(id == playerId)
+            if(id == playerId) {
                 $("#btnJoin").css("visibility", "hidden");
+                $("#status").css("visibility", "hidden");
+            }
             $("#notification").text(name + " has joined!");
             break
 
@@ -154,9 +156,10 @@ function messageHandler(e){
     </script>
 </head>
 <body>
-<div id="status" style="text-align:left">&nbsp;</div>
 
 <div style="font-size: 3em;">WELCOME TO CUTTHROAT :)</div>
+
+<div id="status" style="text-align:left">&nbsp;</div>
 
 <div style="margin-top:1em">
     <div id="mainScreen">
@@ -180,6 +183,7 @@ function messageHandler(e){
 
         <div id="playField">
             <div id="notification"></div>
+            You can now press tab to draw a tile woohoo
             <button id="btnAddBot">Play a Bot!</button>
             <button id="btnDrawTile">Draw Tile</button>
             <div id="freeTiles"></div>
@@ -188,12 +192,11 @@ function messageHandler(e){
                 <input id="word" type="text" maxlength="20" />
                 <button id="btnPlayWord">Play Word</button>
             </div>
-            <div id="scores">
-                <div>Scores</div>
-                <div id="scoresList"></div>
-            </div>
         </div>
-
+        <div id="scores">
+            <div>Scores</div>
+            <div id="scoresList"></div>
+        </div>
     </div>
 </div>
 

@@ -89,7 +89,7 @@ function messageHandler(e){
         case("update"):
             var free_tiles = args[1];
             var players = args[2];
-            $("#freeTiles").text("[" + free_tiles + "]");
+            $("#freeTiles").text("Free tiles: [" + free_tiles + "]");
             $("#table").empty();
             $("#currentPlayers").empty();
             $("#currentPlayers").append("<h5>Current Players</h5>");
@@ -103,8 +103,10 @@ function messageHandler(e){
         case("p_joined"):
             var id = args[1];
             var name = args[2];
-            if(id == playerId)
+            if(id == playerId) {
                 $("#btnJoin").css("visibility", "hidden");
+                $("#status").css("visibility", "hidden");
+            }
             $("#notification").text(name + " has joined!");
             break
 

@@ -81,6 +81,8 @@ class Game:
             self.finished = True
 
     def create_bot(self):
+        if self.bot:
+            self.bot = None
         self._last_id += 1
         bot_id = self._last_id
         while bot_id in self._players:
