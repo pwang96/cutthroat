@@ -2,6 +2,7 @@ import os
 import asyncio
 import json
 from aiohttp import web
+import aiohttp
 import settings
 import aiohttp_debugtoolbar
 from aiohttp_debugtoolbar import toolbar_middleware_factory
@@ -28,9 +29,8 @@ async def wshandler(request):
     await ws.prepare(request)
 
     player = None
-    while True:
-        msg = await ws.receive()
-        if msg.tp == web.MsgType.text:
+    async for msg in ws:
+        if msg.type == aiohttp.WSMsgType.TEXT:
             data = json.loads(msg.data)
             print("Got message: {}".format(data))
 
@@ -55,7 +55,10 @@ async def wshandler(request):
 
                     game.join(player)
 
-        elif msg.tp == web.MsgType.close:
+        elif msg.type == aiohttp.WSMsgType.CLOSE:
+            break
+        elif msg.type == aiohttp.WSMsgType.ERROR:
+            print("Error: msg.type = ERROR")
             break
 
     if player:
