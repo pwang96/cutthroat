@@ -86,6 +86,14 @@ function messageHandler(e){
             $("#notification").text("Sorry! The game is full.")
             break
 
+        case("update_names"):
+            var names = args[1];
+            $("#currentPlayers").empty();
+            $.each(names, function(index, val) {
+                $("#currentPlayers").append("<p>" + val + "</p>");
+            });
+            break
+
         case("update"):
             var free_tiles = args[1];
             var players = args[2];
@@ -93,7 +101,7 @@ function messageHandler(e){
             $("#table").empty();
             $("#currentPlayers").empty();
             $("#currentPlayers").append("<h5>Current Players</h5>");
-            $.each(players, function(player_name,words){
+            $.each(players, function(player_name, words){
                 var entry = "<p>" + player_name + ": [" + words + "]</p>";
                 $("#table").append(entry);
                 $("#currentPlayers").append("<p>" + player_name + "</p>");

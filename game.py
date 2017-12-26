@@ -32,6 +32,19 @@ class Game:
                 if len(line) > 2:
                     self._word_list.add(line)
 
+    @property
+    def free_tiles(self):
+        return self._free_tiles
+
+    @property
+    def all_words(self):
+        words = [(word, player.id, i) for player in self._players.values() for (i, word) in enumerate(player.words)]
+
+        if self.bot:
+            words.extend([(word, self.bot.id, i) for (i, word) in enumerate(self.bot.words)])
+
+        return words
+
     def new_player(self, name, ws):
         """
 
@@ -49,6 +62,7 @@ class Game:
         self.send_personal(ws, "handshake", name, player_id)
 
         self._players[player_id] = p
+        self.update_current_players(ws)
 
         return p
 
@@ -58,7 +72,6 @@ class Game:
             return
         if len(self._players) >= settings.MAX_PLAYERS:
             self.send_personal(player.ws, "game_full")
-            self.update_play_field()
             return
 
         print(self._players)
@@ -161,19 +174,6 @@ class Game:
         self._free_tiles = []
         self._last_id = 0
 
-    @property
-    def free_tiles(self):
-        return self._free_tiles
-
-    @property
-    def all_words(self):
-        words = [(word, player.id, i) for player in self._players.values() for (i, word) in enumerate(player.words)]
-
-        if self.bot:
-            words.extend([(word, self.bot.id, i) for (i, word) in enumerate(self.bot.words)])
-
-        return words
-
     def is_valid(self, proposed_word):
         """
         Checks if the word is valid or not. Checks if it is in the dictionary and if
@@ -208,6 +208,12 @@ class Game:
                     return 0, -1, combo
 
         return -1, -1, ()
+
+    def update_current_players(self, ws):
+        message = "update_names"
+        names = [player.name for player in self._players.values() if player.active]
+
+        self.send_personal(ws, message, names)
 
     def update_play_field(self):
         message = "update"
