@@ -38,12 +38,20 @@ class Game:
 
     @property
     def all_words(self):
-        words = [(word, player.id, i) for player in self._players.values() for (i, word) in enumerate(player.words)]
+        words = [(word, player.id, i) for player in self.players.values() for (i, word) in enumerate(player.words)]
 
         if self.bot:
             words.extend([(word, self.bot.id, i) for (i, word) in enumerate(self.bot.words)])
 
         return words
+
+    @property
+    def players(self):
+        return self._players
+
+    @property
+    def bag(self):
+        return self._bag
 
     def new_player(self, name, ws):
         """

@@ -6,18 +6,24 @@ import aiohttp
 import settings
 import aiohttp_debugtoolbar
 from aiohttp_debugtoolbar import toolbar_middleware_factory
+import re
 
 from game import Game
 
 async def handle(request):
-    ALLOWED_FILES = ["index.html", "style.css"]
-    name = request.match_info.get('name', 'index.html')
-    if name in ALLOWED_FILES:
-        try:
-            with open(name, 'rb') as index:
-                return web.Response(body=index.read(), content_type='text/html')
-        except FileNotFoundError:
-            pass
+    print(request.path)
+    path = request.path
+    file_path = 'index.html' if path == '/' else path[1:]
+    pattern = re.compile('\.(\w*)$')
+    non_html = re.findall(pattern, path)
+    suffix = non_html[0] if non_html else 'html'
+    try:
+        with open(file_path, 'rb') as index:
+            content_type = 'text/' + suffix
+            print(path[1:], content_type)
+            return web.Response(body=index.read(), content_type=content_type)
+    except FileNotFoundError:
+        pass
     return web.Response(status=404)
 
 
@@ -87,8 +93,9 @@ aiohttp_debugtoolbar.setup(app)
 app["game"] = Game()
 
 app.router.add_route('GET', '/connect', wshandler)
-app.router.add_route('GET', '/{name}', handle)
 app.router.add_route('GET', '/', handle)
+app.router.add_route('GET', '/style.css', handle)
+app.router.add_route('GET', '/index.js', handle)
 
 # get port for heroku
 port = int(os.environ.get('PORT', 5000))

@@ -90,14 +90,14 @@ class Bot:
         if pid != -1:
             # delete used_chars from free
             for c in used_chars:
-                self.game._free_tiles.remove(c)
+                self.game.free_tiles.remove(c)
 
             # update scores
             new_word_length = len(top_word)
             self.score += new_word_length
             if pid != 0 and pid != self.id:
-                old_word_length = len(self.game._players[pid].words[index])
-                self.game._players[pid].score -= old_word_length
+                old_word_length = len(self.game.players[pid].words[index])
+                self.game.players[pid].score -= old_word_length
             elif pid != 0 and pid == self.id:
                 old_word_length = len(self.words[index])
                 self.score -= old_word_length
@@ -108,7 +108,7 @@ class Bot:
                 if pid == self.id:
                     del self.words[index]
                 else:
-                    del self.game._players[pid].words[index]
+                    del self.game.players[pid].words[index]
 
             self.game.update_play_field()
 
