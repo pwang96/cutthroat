@@ -15,7 +15,7 @@ class Player:
         self.active = False
 
     def __str__(self):
-        return "Player name: {}, Player ID: {}".format(self.name, self.id)
+        return "Name={}, Score={}".format(self.name, self.score)
 
     def __repr__(self):
-        return " | ".join([self.name, str(self.score), str(self.active)])
+        return self.__str__()

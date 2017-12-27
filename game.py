@@ -1,4 +1,5 @@
 import settings, string, utils, random, json
+import asyncio
 from player import Player
 from collections import Counter
 from bot import Bot
@@ -82,7 +83,7 @@ class Game:
             self.send_personal(player.ws, "game_full")
             return
 
-        print(self._players)
+        print(str(self._players))
         if self.bot:
             print(self.bot)
 
@@ -158,14 +159,15 @@ class Game:
     def send_personal(self, ws, *args):
         msg = json.dumps(args)
         print("sending message: " + msg)
-        ws.send_str(msg)
+        asyncio.ensure_future(ws.send_str(msg))
 
     def send_all(self, *args):
+        # TODO: make this asynchronous, await the send_str
         msg = json.dumps(args)
         print("sending message to all: {}".format(msg))
         for player in self._players.values():
             if player.ws:
-                player.ws.send_str(msg)
+                asyncio.ensure_future(player.ws.send_str(msg))
 
     def draw_tile(self, player):
         print("{} drew a tile".format(player.name))
@@ -223,7 +225,7 @@ class Game:
 
         self.send_personal(ws, message, names)
 
-    def update_play_field(self):
+    def get_updated_play_field_payload(self):
         message = "update"
         num_tiles_left = len(self._bag)
         free_tiles = self.free_tiles
@@ -231,6 +233,11 @@ class Game:
 
         if self.bot:
             player_words[self.bot.name] = self.bot.words
+
+        return message, free_tiles, num_tiles_left, player_words
+
+    def update_play_field(self):
+        message, free_tiles, num_tiles_left, player_words = self.get_updated_play_field_payload()
 
         self.send_all(message, free_tiles, num_tiles_left, player_words)
 

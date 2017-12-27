@@ -11,7 +11,6 @@ import re
 from game import Game
 
 async def handle(request):
-    print(request.path)
     path = request.path
     file_path = 'index.html' if path == '/' else path[1:]
     pattern = re.compile('\.(\w*)$')
@@ -20,18 +19,19 @@ async def handle(request):
     try:
         with open(file_path, 'rb') as index:
             content_type = 'text/' + suffix
-            print(path[1:], content_type)
             return web.Response(body=index.read(), content_type=content_type)
     except FileNotFoundError:
-        pass
-    return web.Response(status=404)
-
+        return web.Response(status=404)
 
 async def wshandler(request):
     print("Connected")
     app = request.app
     game = app["game"]
     ws = web.WebSocketResponse()
+    if ws.can_prepare(request).ok:
+        print("web socket response can be prepared")
+    else:
+        print("there might be an issue with the web socket response")
     await ws.prepare(request)
 
     player = None
@@ -62,6 +62,7 @@ async def wshandler(request):
                     game.join(player)
 
         elif msg.type == aiohttp.WSMsgType.CLOSE:
+            print("Error: msg.type = CLOSE")
             break
         elif msg.type == aiohttp.WSMsgType.ERROR:
             print("Error: msg.type = ERROR")
