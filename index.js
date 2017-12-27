@@ -96,8 +96,10 @@ function messageHandler(e){
 
         case("update"):
             var free_tiles = args[1];
-            var players = args[2];
+            var num_tiles_left = args[2];
+            var players = args[3];
             $("#freeTiles").text("Free tiles: [" + free_tiles + "]");
+            $("#numTilesLeft").text(num_tiles_left + " tiles left.");
             $("#table").empty();
             $("#currentPlayers").empty();
             $("#currentPlayers").append("<h5>Current Players</h5>");

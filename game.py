@@ -217,13 +217,14 @@ class Game:
 
     def update_play_field(self):
         message = "update"
+        num_tiles_left = len(self._bag)
         free_tiles = self.free_tiles
-        player_words = {player.name:player.words for player in self._players.values() if player.active}
+        player_words = {player.name: player.words for player in self._players.values() if player.active}
 
         if self.bot:
             player_words[self.bot.name] = self.bot.words
 
-        self.send_all(message, free_tiles, player_words)
+        self.send_all(message, free_tiles, num_tiles_left, player_words)
 
         self.update_score_field()
 
