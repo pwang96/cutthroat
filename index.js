@@ -3,19 +3,46 @@ var playerName;
 var playerId;
 
 $().ready(function () {
-    $("#mainScreen").show()
-    $("#playScreen").hide()
+    // only show the main screen on arrival
+    $("#mainScreen").show();
+    $("#waitingScreen").hide();
+    $("#playScreen").hide();
+
+    // initialize button handlers
+    initializeButtons();
+});
+
+function connect() {
+    playerName = $("#playerName").val()
+    $("#status").text("connecting...");
+    ws_url = "ws://" + location.host + "/connect"
+    ws = new WebSocket(ws_url);
+    ws.onopen = openHandler;
+    ws.onmessage = messageHandler;
+    ws.onerror = function (e) {
+        $("#status").text(e.message);
+    };
+}
+
+function sendMessage(msgArray) {
+    var msg = JSON.stringify(msgArray);
+    ws.send(msg);
+}
+
+function openHandler(e){
+    $("#status").text("connected to server");
+    playerName = $('#playerName').val();
+    sendMessage(["new_player", playerName]);
+    $("#mainScreen").hide();
+    $("#waitingScreen").show();
+}
+
+function initializeButtons() {
     $("#btnConnect").click(function (){
         connect();
     });
-    $("#btnDisconnect").click(function () {
-        ws.close();
-        $("#playScreen").hide();
-        $("#mainScreen").show();
-        $(document).unbind("keypress", keyHandler);
-    });
-    $("#btnJoin").click(function () {
-        sendMessage(["join"]);
+    $("#btnCreateGame").click(function () {
+        sendMessage(["create_game"]);
     });
     $("#btnPlayWord").click(function() {
         word = $("#word").val();
@@ -44,31 +71,6 @@ $().ready(function () {
             $("#btnDrawTile").click();
         }
     });
-});
-
-function connect() {
-    playerName = $("#playerName").val()
-    $("#status").text("connecting...");
-    ws_url = "ws://" + location.host + "/connect"
-    ws = new WebSocket(ws_url);
-    ws.onopen = openHandler;
-    ws.onmessage = messageHandler;
-    ws.onerror = function (e) {
-        $("#status").text(e.message);
-    };
-}
-
-function sendMessage(msgArray) {
-    var msg = JSON.stringify(msgArray);
-    ws.send(msg);
-}
-
-function openHandler(e){
-    $("#status").text("connected to server");
-    playerName = $('#playerName').val();
-    sendMessage(["new_player", playerName]);
-    $("#mainScreen").hide();
-    $("#playScreen").show();
 }
 
 function messageHandler(e){
@@ -94,6 +96,35 @@ function messageHandler(e){
             });
             break
 
+        case("render_active_games"):
+            var games = args[1];
+            $("#activeGames").empty();
+
+            $.each(games, function(game_id, players) {
+                jQuery('<div/>', {
+                    id: 'activeGame' + game_id,
+                    text: 'Game ' + game_id
+                }).appendTo('#activeGames');
+
+                jQuery('<button/>', {
+                    id: 'btnJoin' + game_id,
+                    class: 'btnJoin',
+                    text: 'Join!',
+                    click: function () {sendMessage(["join", $(this).attr('id')]);}
+                }).appendTo('#activeGame' + game_id);
+
+                jQuery('<div/>', {
+                    id: 'currentPlayers' + game_id,
+                    text: 'Players in this game: ' + players
+                }).appendTo('#activeGame' + game_id);
+            });
+            break
+
+        case("joined_game"):
+            $("#waitingScreen").hide();
+            $("#playScreen").show();
+            break
+
         case("update"):
             var free_tiles = args[1];
             var num_tiles_left = args[2];
@@ -101,12 +132,9 @@ function messageHandler(e){
             $("#freeTiles").text("Free tiles: [" + free_tiles + "]");
             $("#numTilesLeft").text(num_tiles_left + " tiles left.");
             $("#table").empty();
-            $("#currentPlayers").empty();
-            $("#currentPlayers").append("<h5>Current Players</h5>");
             $.each(players, function(player_name, words){
                 var entry = "<p>" + player_name + ": [" + words + "]</p>";
                 $("#table").append(entry);
-                $("#currentPlayers").append("<p>" + player_name + "</p>");
             });
             break
 

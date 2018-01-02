@@ -8,6 +8,7 @@ import aiohttp_debugtoolbar
 from aiohttp_debugtoolbar import toolbar_middleware_factory
 import re
 
+from game_controller import GameController
 from game import Game
 
 async def handle(request):
@@ -26,15 +27,12 @@ async def handle(request):
 async def wshandler(request):
     print("Connected")
     app = request.app
-    game = app["game"]
+    controller = app["controller"]
     ws = web.WebSocketResponse()
-    if ws.can_prepare(request).ok:
-        print("web socket response can be prepared")
-    else:
-        print("there might be an issue with the web socket response")
     await ws.prepare(request)
 
     player = None
+    game = None
     async for msg in ws:
         if msg.type == aiohttp.WSMsgType.TEXT:
             data = json.loads(msg.data)
@@ -42,7 +40,7 @@ async def wshandler(request):
 
             if not player:
                 if data[0] == "new_player":
-                    player = game.new_player(data[1], ws)
+                    player = controller.new_player(data[1], ws)
             else:
                 if player.active and data[0] == "play_word":
                     game.play_word(data[1].lower(), player)
@@ -52,14 +50,14 @@ async def wshandler(request):
                     if not game.bot:
                         game.create_bot()
                 elif data[0] == "join":
+                    game_id = int(data[1][-1])
+                    game = controller.add_to_existing_game(game_id, player)
+                elif data[0] == "create_game":
+                    game = controller.create_new_game()
                     if not game.running:
-                        if not game.is_ready():
-                            game.reset()
-
-                        print("Starting game loop")
+                        print('starting game loop for id {}'.format(game.game_id))
                         asyncio.ensure_future(game_loop(game))
-
-                    game.join(player)
+                    controller.add_to_existing_game(game.game_id, player)
 
         elif msg.type == aiohttp.WSMsgType.CLOSE:
             print("Error: msg.type = CLOSE")
@@ -91,7 +89,7 @@ event_loop.set_debug(True)
 app = web.Application(middlewares=[toolbar_middleware_factory])
 aiohttp_debugtoolbar.setup(app)
 
-app["game"] = Game()
+app["controller"] = GameController()
 
 app.router.add_route('GET', '/connect', wshandler)
 app.router.add_route('GET', '/', handle)

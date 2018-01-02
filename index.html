@@ -22,20 +22,18 @@
         </div>
     </div>
 
-    <div id="playScreen">
-        <div id="playInfo">
-            <div id="userForm">
-                Welcome to the server, <span id="username"></span>! Invite some friends and Join.
-            </div>
-            <div id="joinBtnField">
-                <button id="btnJoin">Join!</button>
-            </div>
-            <div id="currentPlayers"><h5>Current Players</h5>
-            </div>
+    <div id="waitingScreen">
+        <div id="userForm">
+            Welcome to the server, <span id="username"></span>! Join an existing game or start a new one!
         </div>
 
-        <div id="divider">-----------------------------</div>
+        <div id="activeGames"></div>
+        <div id="createNewGame">
+            <button id="btnCreateGame">Create Game!</button>
+        </div>
+    </div>
 
+    <div id="playScreen">
         <div id="playField">
             <div id="notification"></div>
             You can now press tab to draw a tile woohoo

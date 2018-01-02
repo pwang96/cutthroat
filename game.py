@@ -1,13 +1,13 @@
 import settings, string, utils, random, json
 import asyncio
-from player import Player
 from collections import Counter
 from bot import Bot
 
 
 class Game:
 
-    def __init__(self):
+    def __init__(self, game_id):
+        self.game_id = game_id
         self._last_id = 0
         self._players = {}
         self._free_tiles = []
@@ -18,6 +18,7 @@ class Game:
         self.finished = False
 
         self._initialize_dict()
+        self._initialize_bag()
 
     def _initialize_bag(self):
         freq = settings.TILE_FREQUENCIES
@@ -54,30 +55,21 @@ class Game:
     def bag(self):
         return self._bag
 
-    def new_player(self, name, ws):
+    def add_player(self, player):
         """
 
-        :param name: string: name of the player
-        :param ws: WebServer
-        :return: Player
+        :param player:
+        :return:
         """
-        self._last_id += 1
-        player_id = self._last_id
-        while player_id in self._players or self.bot and player_id == self.bot.id:
-            self._last_id += 1
-            player_id = self._last_id
-
-        p = Player(player_id, name, ws)
-        self.send_personal(ws, "handshake", name, player_id)
-
-        self._players[player_id] = p
-        self.update_current_players(ws)
-
-        return p
+        self._players[player.id] = player
 
     def join(self, player):
+        if player.id not in self._players:
+            self.add_player(player)
+
         if player.active:
             # should never happen because the join button should be disabled
+            print("ERROR: active player joining a game")
             return
         if len(self._players) >= settings.MAX_PLAYERS:
             self.send_personal(player.ws, "game_full")
