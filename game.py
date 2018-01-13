@@ -36,10 +36,12 @@ class Game:
 
     @property
     def free_tiles(self):
+        """Returns the list of free tiles in play"""
         return self._free_tiles
 
     @property
     def all_words(self):
+        """Returns the list of all words in play"""
         words = [(word, player.id, i) for player in self.players.values() for (i, word) in enumerate(player.words)]
 
         if self.bot:

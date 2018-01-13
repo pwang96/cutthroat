@@ -38,12 +38,15 @@ function openHandler(e){
 }
 
 function initializeButtons() {
+    /* connect */
     $("#btnConnect").click(function (){
         connect();
     });
+    /* create game */
     $("#btnCreateGame").click(function () {
         sendMessage(["create_game"]);
     });
+    /* play word */
     $("#btnPlayWord").click(function() {
         word = $("#word").val();
         sendMessage(["play_word", word]);
@@ -133,8 +136,13 @@ function messageHandler(e){
             $("#numTilesLeft").text(num_tiles_left + " tiles left.");
             $("#table").empty();
             $.each(players, function(player_name, words){
-                var entry = "<p>" + player_name + ": [" + words + "]</p>";
-                $("#table").append(entry);
+                if (player_name == playerName) {
+                    var entry = "<center><p>" + player_name + ": [" + words + "]</p></center>";
+                    $("#table").append(entry);
+                } else {
+                    var entry = "<p>" + player_name + ": [" + words + "]</p>";
+                    $("#table").append(entry);
+                }
             });
             break
 

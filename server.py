@@ -1,15 +1,9 @@
-import os
-import asyncio
-import json
+import os, asyncio, json, aiohttp, re, sys
 from aiohttp import web
-import aiohttp
 import settings
 import aiohttp_debugtoolbar
 from aiohttp_debugtoolbar import toolbar_middleware_factory
-import re
-
 from game_controller import GameController
-from game import Game
 
 async def handle(request):
     path = request.path
@@ -82,20 +76,25 @@ async def game_loop(game):
     game.running = False
 
 
-event_loop = asyncio.get_event_loop()
-event_loop.set_debug(True)
+if __name__ == '__main__':
+    port = 5000
+    if len(sys.argv) == 2:
+        port = int(sys.argv[1])
 
-# app = web.Application()
-app = web.Application(middlewares=[toolbar_middleware_factory])
-aiohttp_debugtoolbar.setup(app)
+    event_loop = asyncio.get_event_loop()
+    event_loop.set_debug(True)
 
-app["controller"] = GameController()
+    # app = web.Application()
+    app = web.Application(middlewares=[toolbar_middleware_factory])
+    aiohttp_debugtoolbar.setup(app)
 
-app.router.add_route('GET', '/connect', wshandler)
-app.router.add_route('GET', '/', handle)
-app.router.add_route('GET', '/style.css', handle)
-app.router.add_route('GET', '/index.js', handle)
+    app["controller"] = GameController()
 
-# get port for heroku
-port = int(os.environ.get('PORT', 5000))
-web.run_app(app, port=port)
+    app.router.add_route('GET', '/connect', wshandler)
+    app.router.add_route('GET', '/', handle)
+    app.router.add_route('GET', '/style.css', handle)
+    app.router.add_route('GET', '/index.js', handle)
+
+    # get port for heroku
+    port = int(os.environ.get('PORT', port))
+    web.run_app(app, port=port)

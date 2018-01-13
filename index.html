@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Cutthroat!</title>
     <link rel="stylesheet" type="text/css" href="style.css" />
+    <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
     <script type="text/javascript" src="index.js"></script>
 </head>
@@ -27,8 +28,10 @@
             Welcome to the server, <span id="username"></span>! Join an existing game or start a new one!
         </div>
 
+        <h5>Active Games List</h5>
         <div id="activeGames"></div>
         <div id="createNewGame">
+            <i id="createGameIcon" class="fas fa-plus"></i>
             <button id="btnCreateGame">Create Game!</button>
         </div>
     </div>
@@ -39,16 +42,20 @@
             You can now press tab to draw a tile woohoo
             <button id="btnAddBot">Play a Bot!</button>
             <button id="btnDrawTile">Draw Tile</button>
-            <div id="freeTiles"></div>
-            <div id="numTilesLeft"></div>
+            <center>
+                <div id="freeTiles"></div>
+                <div id="numTilesLeft"></div>
+            </center>
             <div id="table"></div>
-            <div id="submitField">
-                <input id="word" type="text" maxlength="20" />
-                <button id="btnPlayWord">Play Word</button>
-            </div>
+            <center>
+                <div id="submitField">
+                    <input id="word" type="text" maxlength="20" />
+                    <button id="btnPlayWord">Play Word</button>
+                </div>
+            </center>
         </div>
         <div id="scores">
-            <div>Scores</div>
+            <h5>Scores</h5>
             <div id="scoresList"></div>
         </div>
     </div>

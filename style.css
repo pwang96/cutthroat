@@ -7,3 +7,9 @@
 #mainScreen {
     text-align: center;
 }
+
+/* Icon formatting */
+#createGameIcon {
+    font-size: 3em;
+    color: Tomato
+}
