@@ -82,11 +82,11 @@ if __name__ == '__main__':
         port = int(sys.argv[1])
 
     event_loop = asyncio.get_event_loop()
-    event_loop.set_debug(True)
+    # event_loop.set_debug(True)
 
-    # app = web.Application()
-    app = web.Application(middlewares=[toolbar_middleware_factory])
-    aiohttp_debugtoolbar.setup(app)
+    app = web.Application()
+    # app = web.Application(middlewares=[toolbar_middleware_factory])
+    # aiohttp_debugtoolbar.setup(app)
 
     app["controller"] = GameController()
 
