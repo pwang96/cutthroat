@@ -4,12 +4,13 @@ from player import Player
 
 class GameController:
 
-    def __init__(self):
+    def __init__(self, debug=False):
         self._last_game_id = 0
         self._last_player_id = 0
         self.waiting_players = {}  # Mapping of Player ID to Player object
         self.active_games = {}  # Mapping of Game ID to Game object
         self.active_players = {}  # Mapping of PlayerID to Game ID
+        self.debug = debug
 
     def new_player(self, name, ws):
         """
@@ -80,13 +81,15 @@ class GameController:
 
     def send_personal(self, ws, *args):
         msg = json.dumps(args)
-        print("sending message: " + msg)
+        if self.debug:
+            print("sending message: " + msg)
         asyncio.ensure_future(ws.send_str(msg))
 
     def send_all(self, *args):
         # TODO: make this asynchronous, await the send_str
         msg = json.dumps(args)
-        print("sending message to all: {}".format(msg))
+        if self.debug:
+            print("sending message to all: {}".format(msg))
         for player in self.waiting_players.values():
             if player.ws:
                 asyncio.ensure_future(player.ws.send_str(msg))
