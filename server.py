@@ -19,7 +19,7 @@ async def handle(request):
         return web.Response(status=404)
 
 async def wshandler(request):
-    print("Connected")
+    # print("Connected")
     app = request.app
     controller = app["controller"]
     ws = web.WebSocketResponse()
@@ -30,7 +30,7 @@ async def wshandler(request):
     async for msg in ws:
         if msg.type == aiohttp.WSMsgType.TEXT:
             data = json.loads(msg.data)
-            print("Got message: {}".format(data))
+            # print("Got message: {}".format(data))
 
             if not player:
                 if data[0] == "new_player":
@@ -63,7 +63,7 @@ async def wshandler(request):
     if player:
         game.player_disconnected(player)
 
-    print("Closed connection")
+    # print("Closed connection")
     return ws
 
 async def game_loop(game):

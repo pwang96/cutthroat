@@ -6,7 +6,7 @@ from bot import Bot
 
 class Game:
 
-    def __init__(self, game_id):
+    def __init__(self, game_id, debug=False):
         self.game_id = game_id
         self._last_id = 0
         self._players = {}
@@ -16,6 +16,7 @@ class Game:
         self.bot = None
         self.running = False
         self.finished = False
+        self.debug = debug
 
         self._initialize_dict()
         self._initialize_bag()
@@ -71,15 +72,17 @@ class Game:
 
         if player.active:
             # should never happen because the join button should be disabled
-            print("ERROR: active player joining a game")
+            if self.debug:
+                print("ERROR: active player joining a game")
             return
         if len(self._players) >= settings.MAX_PLAYERS:
             self.send_personal(player.ws, "game_full")
             return
 
-        print(str(self._players))
-        if self.bot:
-            print(self.bot)
+        if self.debug:
+            print(str(self._players))
+            if self.bot:
+                print(self.bot)
 
         player.active = True
         self.send_all("p_joined", player.id, player.name)
@@ -152,19 +155,22 @@ class Game:
 
     def send_personal(self, ws, *args):
         msg = json.dumps(args)
-        print("sending message: " + msg)
+        if self.debug:
+            print("sending message: " + msg)
         asyncio.ensure_future(ws.send_str(msg))
 
     def send_all(self, *args):
         # TODO: make this asynchronous, await the send_str
         msg = json.dumps(args)
-        print("sending message to all: {}".format(msg))
+        if self.debug:
+            print("sending message to all: {}".format(msg))
         for player in self._players.values():
             if player.ws:
                 asyncio.ensure_future(player.ws.send_str(msg))
 
     def draw_tile(self, player):
-        print("{} drew a tile".format(player.name))
+        if self.debug:
+            print("{} drew a tile".format(player.name))
         if len(self._bag) == 0:
             self.finished = True
             return

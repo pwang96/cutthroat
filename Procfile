@@ -1,1 +1,1 @@
-web: python3 server.py $PATH
+web: python3 server.py $PORT
