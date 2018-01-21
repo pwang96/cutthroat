@@ -15,7 +15,7 @@ $().ready(function () {
 function connect() {
     playerName = $("#playerName").val()
     $("#status").text("connecting...");
-    ws_url = "wss://" + location.host + "/connect"
+    ws_url = "ws://" + location.host + "/connect";
     ws = new WebSocket(ws_url);
     ws.onopen = openHandler;
     ws.onmessage = messageHandler;

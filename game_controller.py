@@ -51,12 +51,14 @@ class GameController:
 
         self.send_personal(player.ws, "joined_game")
 
+        self.render_active_games()
+
         return self.active_games[game_id]
 
     def create_new_game(self):
         self._last_game_id += 1
         game_id = self._last_game_id
-        new_game = game.Game(game_id)
+        new_game = game.Game(game_id, debug=self.debug)
 
         self.active_games[game_id] = new_game
 

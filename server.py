@@ -19,7 +19,7 @@ async def handle(request):
         return web.Response(status=404)
 
 async def wshandler(request):
-    # print("Connected")
+    print("Connected")
     app = request.app
     controller = app["controller"]
     ws = web.WebSocketResponse()
@@ -88,7 +88,7 @@ if __name__ == '__main__':
     # app = web.Application(middlewares=[toolbar_middleware_factory])
     # aiohttp_debugtoolbar.setup(app)
 
-    app["controller"] = GameController()
+    app["controller"] = GameController(debug=True)
 
     app.router.add_route('GET', '/connect', wshandler)
     app.router.add_route('GET', '/', handle)
