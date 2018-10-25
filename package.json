@@ -1,0 +1,20 @@
+{
+  "name": "cutthroat",
+  "version": "1.0.0",
+  "description": "RULES OF THE GAME:",
+  "main": "Web/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pwang96/cutthroat.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/pwang96/cutthroat/issues"
+  },
+  "homepage": "https://github.com/pwang96/cutthroat#readme"
+}

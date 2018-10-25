@@ -113,6 +113,15 @@ class Game:
         self.send_all("p_joined", 0, self.bot.name)
         self.update_play_field()
 
+    def remove_bot(self):
+        if not self.bot:
+            return None
+        name = self.bot.name
+        self.bot = None
+
+        self.send_all("dc", name)
+        self.update_play_field()
+
     def play_word(self, word, player):
         """
 
@@ -165,8 +174,10 @@ class Game:
         if self.debug:
             print("sending message to all: {}".format(msg))
         for player in self._players.values():
-            if player.ws:
-                asyncio.ensure_future(player.ws.send_str(msg))
+            asyncio.ensure_future(player.ws.send_str(msg))
+            # if player.ws:
+            #     asyncio.ensure_future(player.ws.send_str(msg))
+            #     print('sent to {}'.format(player))
 
     def draw_tile(self, player):
         if self.debug:

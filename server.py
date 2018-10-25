@@ -1,4 +1,4 @@
-import os, asyncio, json, aiohttp, re, sys
+import os, asyncio, json, aiohttp, re, sys, argparse
 from aiohttp import web
 import settings
 import aiohttp_debugtoolbar
@@ -7,12 +7,13 @@ from game_controller import GameController
 
 async def handle(request):
     path = request.path
+    print(path)
     file_path = 'index.html' if path == '/' else path[1:]
     pattern = re.compile('\.(\w*)$')
     non_html = re.findall(pattern, path)
     suffix = non_html[0] if non_html else 'html'
     try:
-        with open(file_path, 'rb') as index:
+        with open('Web/' + file_path, 'rb') as index:
             content_type = 'text/' + suffix
             return web.Response(body=index.read(), content_type=content_type)
     except FileNotFoundError:
@@ -43,6 +44,8 @@ async def wshandler(request):
                 elif player.active and data[0] == "add_bot":
                     if not game.bot:
                         game.create_bot()
+                elif player.active and data[0] == "remove_bot":
+                    game.remove_bot()
                 elif data[0] == "join":
                     game_id = int(data[1][-1])
                     game = controller.add_to_existing_game(game_id, player)
@@ -75,26 +78,30 @@ async def game_loop(game):
         await asyncio.sleep(1./settings.GAME_SPEED)
     game.running = False
 
+async def simple(request):
+    return web.Response(text="Simple answer")
+
+def init(debug):
+    app = web.Application()
+    app['controller'] = GameController(debug=debug)
+    app.router.add_get('/', handle)
+    app.router.add_get('/style.css', handle)
+    app.router.add_get('/index.js', handle)
+    app.router.add_get('/connect', wshandler)
+
+    return app
 
 if __name__ == '__main__':
-    port = 5000
-    if len(sys.argv) == 2:
-        port = int(sys.argv[1])
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--port', nargs='?', const=1, type=int, default=5000)
+    parser.add_argument("--debug", help="show debug messages", action="store_true")
+    args = parser.parse_args()
+    if args.port:
+        port = args.port
 
     event_loop = asyncio.get_event_loop()
-    # event_loop.set_debug(True)
-
-    app = web.Application()
-    # app = web.Application(middlewares=[toolbar_middleware_factory])
-    # aiohttp_debugtoolbar.setup(app)
-
-    app["controller"] = GameController(debug=True)
-
-    app.router.add_route('GET', '/connect', wshandler)
-    app.router.add_route('GET', '/', handle)
-    app.router.add_route('GET', '/style.css', handle)
-    app.router.add_route('GET', '/index.js', handle)
+    event_loop.set_debug(True)
 
     # get port for heroku
-    port = int(os.environ.get('PORT', port))
-    web.run_app(app, port=port)
+    port = int(os.environ.get('PORT', args.port))
+    web.run_app(init(True))
