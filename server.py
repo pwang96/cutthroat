@@ -81,6 +81,7 @@ async def game_loop(game):
 async def simple(request):
     return web.Response(text="Simple answer")
 
+
 def init(debug):
     app = web.Application()
     app['controller'] = GameController(debug=debug)
