@@ -104,4 +104,4 @@ if __name__ == '__main__':
 
     # get port for heroku
     port = int(os.environ.get('PORT', args.port))
-    web.run_app(init(True))
+    web.run_app(init(True), port=port)
