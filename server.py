@@ -1,4 +1,4 @@
-import os, asyncio, json, aiohttp, re, sys, argparse
+import os, asyncio, json, aiohttp, re, sys, argparse, ssl
 from aiohttp import web
 import settings
 import aiohttp_debugtoolbar
@@ -21,6 +21,7 @@ async def handle(request):
         return web.Response(status=404)
 
 async def wshandler(request):
+    print(request)
     print("Connected")
     app = request.app
     controller = app["controller"]
@@ -91,7 +92,7 @@ async def simple(request):
     return web.Response(text="Simple answer")
 
 
-def init(debug):
+def init(debug=True):
     app = web.Application()
     app['controller'] = GameController(debug=debug)
     app.router.add_get('/', handle)
@@ -104,7 +105,7 @@ def init(debug):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', nargs='?', const=1, type=int, default=5000)
+    parser.add_argument('--port', nargs='?', const=1, type=int, default=8443) # 8443 default for https
     parser.add_argument("--debug", help="show debug messages", action="store_true")
     args = parser.parse_args()
     if args.port:
@@ -117,4 +118,7 @@ if __name__ == '__main__':
 
     # get port for heroku
     port = int(os.environ.get('PORT', args.port))
-    web.run_app(init(True), port=port)
+    # ssl_context = ssl.create_default_context(ssl.Purpose.CLIENT_AUTH)
+    # ssl_context.load_default_certs()
+    # web.run_app(init(), port=port, ssl_context=ssl_context)
+    web.run_app(init(), port=port)
