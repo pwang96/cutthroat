@@ -17,6 +17,7 @@ class Game:
         self.running = False
         self.finished = False
         self.debug = debug
+        self.player_idx_to_draw = 0
 
         self._initialize_dict()
         self._initialize_bag()
@@ -89,10 +90,9 @@ class Game:
         self.update_play_field()
 
     def player_disconnected(self, player):
-        player.ws = None
+        player.active = False
         name = player.name
         del self._players[player.id]
-        del player
         self.send_all("dc", name)
 
         self.update_play_field()
@@ -165,14 +165,14 @@ class Game:
     def send_personal(self, ws, *args):
         msg = json.dumps(args)
         if self.debug:
-            print("sending message: " + msg)
+            print("(game) sending message: " + msg)
         asyncio.ensure_future(ws.send_str(msg))
 
     def send_all(self, *args):
         # TODO: make this asynchronous, await the send_str
         msg = json.dumps(args)
         if self.debug:
-            print("sending message to all: {}".format(msg))
+            print("(game) sending message to all: {}".format(msg))
         for player in self._players.values():
             asyncio.ensure_future(player.ws.send_str(msg))
             # if player.ws:
@@ -188,6 +188,7 @@ class Game:
         tile = random.choice(self._bag)
         self._bag.remove(tile)
         self._free_tiles.append(tile)
+        self.player_idx_to_draw = (self.player_idx_to_draw + 1) % len(self._players)
         self.update_play_field()
 
     def reset(self):
@@ -240,17 +241,24 @@ class Game:
         message = "update"
         num_tiles_left = len(self._bag)
         free_tiles = self.free_tiles
-        player_words = {player.name: player.words for player in self._players.values() if player.active}
+        player_words = {}
+        drawing_player = ""
+        i = 0
+        for player in self._players.values():
+            if i == self.player_idx_to_draw:
+                drawing_player = player.name
+            player_words[player.name] = player.words
+            i += 1
 
         if self.bot:
             player_words[self.bot.name] = self.bot.words
 
-        return message, free_tiles, num_tiles_left, player_words
+        return message, free_tiles, num_tiles_left, player_words, drawing_player
 
     def update_play_field(self):
-        message, free_tiles, num_tiles_left, player_words = self.get_updated_play_field_payload()
+        message, free_tiles, num_tiles_left, player_words, drawer = self.get_updated_play_field_payload()
 
-        self.send_all(message, free_tiles, num_tiles_left, player_words)
+        self.send_all(message, free_tiles, num_tiles_left, player_words, drawer)
 
         self.update_score_field()
 

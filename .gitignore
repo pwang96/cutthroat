@@ -1,0 +1,5 @@
+# asdf
+venv/
+*.pyc
+__pycache__/
+.idea/

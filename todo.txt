@@ -1,3 +1,4 @@
 - when a player leaves the game, their words should be stored in a communal pool of words that can be stolen from
 - bot thinking time bug
 - prettify
+- make game updates into modals

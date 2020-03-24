@@ -6,20 +6,63 @@
     <link rel="stylesheet" type="text/css" href="style.css" />
     <script defer src="https://use.fontawesome.com/releases/v5.0.2/js/all.js"></script>
     <script type="text/javascript" src="https://code.jquery.com/jquery-2.2.1.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-growl/1.0.0/jquery.bootstrap-growl.min.js"></script>
     <script type="text/javascript" src="index.js"></script>
 </head>
 <body>
 
-<div id="titleBanner">Cutthroat!</div>
+<div id="titleBanner">
+    <img
+    src="/static/letter-c.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-u.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-t.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-t.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-h.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-r.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-o.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-a.svg"
+    height="35px"
+    width="35px" />
+    <img
+    src="/static/letter-t.svg"
+    height="35px"
+    width="35px" />
+</div>
 
 <div id="status" style="text-align:left">&nbsp;</div>
 
 <div style="margin-top:1em">
-    <div id="mainScreen">
-        <div id="connectForm">
-            <span>Name</span>
-            <input id="playerName" type="text" maxlength="15" />
-            <button id="btnConnect">Connect</button>
+    <div class="row" id="mainScreen">
+        <div class="col-md-4 offset-md-4" id="connectForm">
+            <div class="input-group">
+              <div class="input-group-prepend">
+                <span class="input-group-text" id="inputGroup-sizing-default">Name</span>
+              </div>
+              <input id="playerName" type="text" class="form-control" aria-label="Sizing example input" aria-describedby="inputGroup-sizing-sm">
+            </div>
+            <button class="btn btn-primary btn-g" id="btnConnect">Connect</button>
         </div>
     </div>
 
@@ -35,29 +78,41 @@
             <button id="btnCreateGame">Create Game!</button>
         </div>
     </div>
-
-    <div id="playScreen">
-        <div id="playField">
-            <div id="notification"></div>
-            You can now press tab to draw a tile woohoo
-            <button id="btnAddBot">Play a Bot!</button>
-            <button id="btnRemoveBot">Remove the bot!</button>
-            <button id="btnDrawTile">Draw Tile</button>
-            <center>
-                <div id="freeTiles"></div>
-                <div id="numTilesLeft"></div>
-            </center>
-            <div id="table"></div>
-            <center>
-                <div id="submitField">
-                    <input id="word" type="text" maxlength="20" />
-                    <button id="btnPlayWord">Play Word</button>
+    <div class="container-fluid" id="playScreen">
+        <div class="row">
+            <div class="col-md-12" id="playField">
+                <div class="row">
+                    <div class="col-md-12">
+                        <button class="btn btn-secondary" id="btnReturnToWaitingRoom">Go Back</button>
+                        <button class="btn btn-secondary" id="btnAddBot">Play a Bot!</button>
+                        <button class="btn btn-secondary" id="btnRemoveBot">Remove the bot!</button>
+                        <button class="btn btn-secondary" id="btnDrawTile" disabled>Draw Tile (tab)</button>
+                    </div>
                 </div>
-            </center>
-        </div>
-        <div id="scores">
-            <h5>Scores</h5>
-            <div id="scoresList"></div>
+                <div class="row">
+                    <div class="col-md-3">
+                        <div id="table"></div>
+
+                        <div id="scores">
+                            <h5>Scores</h5>
+                            <div id="scoresList"></div>
+                        </div>
+                    </div>
+                    <div class="col-md-9">
+                        <center>
+                            <div id="freeTiles"></div>
+                            <div id="numTilesLeft"></div>
+                        </center>
+                        <center>
+                            <div id="submitField">
+                                <input id="word" type="text" maxlength="20" />
+                                <button id="btnPlayWord">Play Word</button>
+                            </div>
+                        </center>
+                    </div>
+                </div>
+            </div>
+
         </div>
     </div>
 </div>

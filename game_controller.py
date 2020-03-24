@@ -1,12 +1,10 @@
-import game, asyncio, json
+import game, asyncio, json, uuid
 from player import Player
 
 
 class GameController:
 
     def __init__(self, debug=False):
-        self._last_game_id = 0
-        self._last_player_id = 0
         self.waiting_players = {}  # Mapping of Player ID to Player object
         self.active_games = {}  # Mapping of Game ID to Game object
         self.active_players = {}  # Mapping of PlayerID to Game ID
@@ -19,8 +17,7 @@ class GameController:
         :param ws:
         :return:
         """
-        self._last_player_id += 1
-        p_id = self._last_player_id
+        p_id = uuid.uuid4().hex
 
         p = Player(p_id, name, ws)
 
@@ -30,10 +27,13 @@ class GameController:
         self.render_active_games()
         return p
 
-    def disconnected_player(self, player):
+    def player_disconnected(self, player):
         game_id = self.active_players[player.id]
         self.active_games[game_id].player_disconnected(player)
         del self.active_players[player.id]
+
+        if self.active_games[game_id].finished:
+            del self.active_games[game_id]
 
     def add_to_waiting_area(self, player):
         self.waiting_players[player.id] = player
@@ -56,8 +56,7 @@ class GameController:
         return self.active_games[game_id]
 
     def create_new_game(self):
-        self._last_game_id += 1
-        game_id = self._last_game_id
+        game_id = uuid.uuid4().hex
         new_game = game.Game(game_id, debug=self.debug)
 
         self.active_games[game_id] = new_game
@@ -84,14 +83,15 @@ class GameController:
     def send_personal(self, ws, *args):
         msg = json.dumps(args)
         if self.debug:
-            print("sending message: " + msg)
+            print("(gamecontroller) sending message: " + msg)
         asyncio.ensure_future(ws.send_str(msg))
 
     def send_all(self, *args):
         # TODO: make this asynchronous, await the send_str
         msg = json.dumps(args)
+
         if self.debug:
-            print("sending message to all: {}".format(msg))
+            n = len(self.waiting_players.values())
+            print("(gamecontroller) sending message to all ({} players): {}".format(n, msg))
         for player in self.waiting_players.values():
-            if player.ws:
-                asyncio.ensure_future(player.ws.send_str(msg))
+            asyncio.ensure_future(player.ws.send_str(msg))
