@@ -105,7 +105,7 @@ def init(debug=True):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--port', nargs='?', const=1, type=int, default=8443) # 8443 default for https
+    parser.add_argument('--port', nargs='?', const=1, type=int, default=5000) # 8443 default for https
     parser.add_argument("--debug", help="show debug messages", action="store_true")
     args = parser.parse_args()
     if args.port:
