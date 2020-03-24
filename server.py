@@ -113,6 +113,8 @@ if __name__ == '__main__':
     event_loop = asyncio.get_event_loop()
     event_loop.set_debug(True)
 
+    sys.stdout.flush()
+
     # get port for heroku
     port = int(os.environ.get('PORT', args.port))
     web.run_app(init(True), port=port)
