@@ -14,8 +14,8 @@ $().ready(function () {
 
 function connect() {
     playerName = $("#playerName").val()
-    $("#status").text("connecting...");
-    ws_url = "wss://" + location.host + "/connect";
+    // $("#status").text("connecting...");
+    ws_url = "ws://" + location.host + "/connect";
     console.log(location.host);
     ws = new WebSocket(ws_url);
     ws.onopen = openHandler;
@@ -31,7 +31,7 @@ function sendMessage(msgArray) {
 }
 
 function openHandler(e){
-    $("#status").text("connected to server");
+    //$("#status").text("connected to server");
     playerName = $('#playerName').val();
     sendMessage(["new_player", playerName]);
     $("#mainScreen").hide();
@@ -39,43 +39,59 @@ function openHandler(e){
 }
 
 function initializeButtons() {
-    /* connect */
     $("#btnConnect").click(function (){
         connect();
     });
-    /* create game */
+
     $("#btnCreateGame").click(function () {
         sendMessage(["create_game"]);
     });
-    /* play word */
+
     $("#btnPlayWord").click(function() {
         word = $("#word").val();
         sendMessage(["play_word", word]);
         $("#word").val('');
     });
+
     $("#btnDrawTile").click(function() {
         sendMessage(["draw_tile"]);
         $("#word").focus();
     });
+
+    $("#btnReturnToWaitingRoom").click(function() {
+        sendMessage(["return_to_waiting_room"]);
+        $("#playScreen").hide();
+        $("#waitingScreen").show();
+        $("#freeTiles").empty();
+        $("#freeTiles").text("Free tiles:");
+    });
+
     $("#btnAddBot").click(function() {
         sendMessage(["add_bot"]);
     });
+
     $("#btnRemoveBot").click(function() {
         sendMessage(["remove_bot"]);
     })
+
     $("#playerName").keyup(function(event) {
         if (event.keyCode === 13) {
             $("#btnConnect").click();
         }
     });
+
     $("#word").keyup(function(event) {
         if (event.keyCode === 13) {
             $("#btnPlayWord").click();
         }
     });
+
     $(document).keyup(function(event) {
         if (event.keyCode === 9) {
-            $("#btnDrawTile").click();
+            var disabled = $("#btnDrawTile").attr('disabled');
+            if (typeof disabled === typeof undefined || disabled === false) {
+                $("#btnDrawTile").click();
+            }
         }
     });
 }
@@ -106,25 +122,27 @@ function messageHandler(e){
 
         case("render_active_games"):
             var games = args[1];
+            let n = 1;
             $("#activeGames").empty();
 
             $.each(games, function(game_id, players) {
                 jQuery('<div/>', {
-                    id: 'activeGame' + game_id,
-                    text: 'Game ' + game_id
+                    id: game_id,
+                    text: 'Game ' + n
                 }).appendTo('#activeGames');
+                n++;
 
                 jQuery('<button/>', {
-                    id: 'btnJoin' + game_id,
+                    id: game_id,
                     class: 'btnJoin',
                     text: 'Join!',
                     click: function () {sendMessage(["join", $(this).attr('id')]);}
-                }).appendTo('#activeGame' + game_id);
+                }).appendTo('#' + game_id);
 
                 jQuery('<div/>', {
                     id: 'currentPlayers' + game_id,
                     text: 'Players in this game: ' + players
-                }).appendTo('#activeGame' + game_id);
+                }).appendTo('#' + game_id);
             });
             break
 
@@ -137,18 +155,33 @@ function messageHandler(e){
             var free_tiles = args[1];
             var num_tiles_left = args[2];
             var players = args[3];
-            $("#freeTiles").text("Free tiles: [" + free_tiles + "]");
+            var drawer = args[4];
+            $("#freeTiles").text("Free tiles:");
+            free_tiles.forEach(function(tile) {
+                console.log(tile);
+                $("#freeTiles").append("<img src='/static/letter-" + tile + ".svg' height='35px' width='35px' />")
+            });
             $("#numTilesLeft").text(num_tiles_left + " tiles left.");
             $("#table").empty();
             $.each(players, function(player_name, words){
                 if (player_name == playerName) {
-                    var entry = "<center><p>" + player_name + ": [" + words + "]</p></center>";
+                    var entry = "<strong><p>" + player_name + ": [" + words + "]</p></strong>";
                     $("#table").append(entry);
-                } else {
+                    return false;
+                }
+            });
+            $.each(players, function(player_name, words){
+                if (player_name != playerName) {
                     var entry = "<p>" + player_name + ": [" + words + "]</p>";
                     $("#table").append(entry);
                 }
             });
+
+            if (drawer != playerName) {
+                $('#btnDrawTile').attr('disabled', true);
+            } else {
+                $('#btnDrawTile').removeAttr('disabled');
+            }
             break
 
         case("p_joined"):
@@ -158,18 +191,27 @@ function messageHandler(e){
                 $("#btnJoin").css("visibility", "hidden");
                 $("#status").css("visibility", "hidden");
             }
-            $("#notification").text(name + " has joined!");
+            $.bootstrapGrowl(name + " has joined!",{
+                type: 'info',
+                delay: 1000,
+            });
             break
 
         case("valid_word"):
             var word = args[1];
             var name = args[2];
-            $("#notification").text(name + " played " + word);
+            $.bootstrapGrowl(name + " played " + word,{
+                type: 'info',
+                delay: 1000,
+            });
             break
 
         case("invalid_word"):
             var word = args[1];
-            $("#notification").text(word + " is not valid!");
+            $.bootstrapGrowl(word + " is not valid!",{
+                type: 'info',
+                delay: 1000,
+            });
             break
 
         case("scores"):
@@ -178,13 +220,26 @@ function messageHandler(e){
             for (var i = 0; i < scores.length; i++) {
                 var name = scores[i][0];
                 var score = scores[i][1];
-                $("#scoresList").append("<p>" + name + ": " + score + "</p>");
+                if (name == playerName) {
+                    $("#scoresList").append("<strong><p>" + name + ": " + score + "</p></strong>");
+                    break;
+                }
+            }
+            for (var j = 0; j < scores.length; j++) {
+                var name = scores[j][0];
+                var score = scores[j][1];
+                if (name != playerName) {
+                    $("#scoresList").append("<p>" + name + ": " + score + "</p>");
+                }
             }
             break
 
         case("dc"):
             var name = args[1];
-            $("#notification").text(name + " has disconnected");
+            $.bootstrapGrowl(name + " has disconnected!",{
+                type: 'info',
+                delay: 1000,
+            });
             break
 
         case("p_gameover"):
