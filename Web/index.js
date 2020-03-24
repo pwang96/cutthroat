@@ -14,8 +14,9 @@ $().ready(function () {
 
 function connect() {
     playerName = $("#playerName").val()
-    // $("#status").text("connecting...");
-    ws_url = "wss://" + location.host + "/connect";
+
+    ws_url = "wss://" + location.host + "/connect"; // USE FOR HEROKU
+    // ws_url = "ws://" + location.host + "/connect"; // USE FOR LOCAL TESTING
     console.log(location.host);
     ws = new WebSocket(ws_url);
     ws.onopen = openHandler;
@@ -44,6 +45,8 @@ function initializeButtons() {
     });
 
     $("#btnCreateGame").click(function () {
+        $("#waiting-status").text("creating a new game...");
+        $('#btnCreateGame').attr('disabled', true);
         sendMessage(["create_game"]);
     });
 
